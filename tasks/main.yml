@@ -1,0 +1,58 @@
+---
+# tasks file for roles/ocp_etcd_restore
+
+- name: "Fail when a mandatory required vars are not defined"
+  fail:
+    msg: "Required variables are not defined"
+  when:
+    - backup_src is not defined
+    - backup_dst is not defined
+
+- name: Debug Source Machine (Bastion) -> Backup File
+  debug:
+    msg: "Source Machine (Bastion) -> Backup File: {{ backup_src }}"
+    verbosity: 1
+
+- name: Debug Destination Machine (Master) -> Backup File
+  debug:
+    msg: "Destination Machine (Master) -> Backup File: {{ backup_dst }}"
+    verbosity: 1
+
+- name: Register the filenames
+  find:
+    paths: "{{ backup_src }}"
+    recurse: no
+  register: files_to_copy
+  delegate_to: localhost
+  run_once: true
+
+- name: Create a {{ backup_dst }} folder
+  file:
+    path: "{{ backup_dst }}"
+    state: directory
+
+- name: Copy ETCD backup files (*.tar.gz, *.db)
+  copy:
+    src: "{{ item.path }}"
+    dest: "{{ backup_dst }}"
+    force: yes
+  loop: "{{ files_to_copy.files }}"
+
+- name: Stop ETCD containers
+  shell: "crictl stop $(crictl ps --name {{ item }} -q)"
+  loop:
+    - etcd
+    - etcdctl
+    - etcd-metrics
+    - kube-controller-manager
+    - kube-apiserver
+    - kube-scheduler
+
+- name: Restore ETCD backup
+  shell: "/usr/local/bin/cluster-restore.sh {{ backup_dst }}"
+  become: true
+
+- name: Remove the {{ backup_dst }} folder
+  file:
+    path: "{{ backup_dst }}"
+    state: absent

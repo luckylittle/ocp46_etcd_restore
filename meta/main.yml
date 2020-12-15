@@ -1,0 +1,13 @@
+galaxy_info:
+  author: Lucian Maly
+  description: OCP4.6 ETCD restore backup
+  company: Red Hat
+  license: MIT
+  min_ansible_version: 2.9
+  platforms:
+    - name: Red Hat Enterprise Linux
+      versions:
+        - 8
+  galaxy_tags: []
+
+dependencies: []
