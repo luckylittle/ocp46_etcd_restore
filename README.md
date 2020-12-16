@@ -1,7 +1,7 @@
 ocp46_etcd_restore
 =========
 
-OCP ETCD Restore role performs a ETCD cluster data restore in an OpenShift 4.2 environment from a previous backup.
+OCP ETCD Restore role performs a ETCD cluster data restore in an OpenShift 4.6 environment from a previous backup.
 
 
 Prerequisites
